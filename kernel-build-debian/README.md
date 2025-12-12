@@ -268,18 +268,3 @@ Regenerate config using tiny script + merge current config:
 ```
 
 ---
-
-# 9. License
-
-MIT License (optional)
-
----
-
-If you want, I can also generate:
-
-* A GitHub-ready repository
-* A more detailed architecture document
-* A systemd service for automatic kernel cleanup
-* A CI-validated kernel build pipeline
-
-Just tell me.
