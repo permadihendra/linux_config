@@ -18,6 +18,7 @@ KEEP_DEBS_IN="${HOME%/}/kernel-debs" # place to copy resulting .deb files
 KEEP_OLD_KERNELS=1                  # informational only; cleanup handled separately
 EXTRA_DISABLES=(
   "DEBUG_INFO"
+  "DEBUG_INFO_BTF"
   "DEBUG_INFO_DWARF_TOOLCHAIN_DEFAULT"
   "DEBUG_KERNEL"
   "GDB_SCRIPTS"
