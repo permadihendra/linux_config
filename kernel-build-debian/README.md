@@ -1,11 +1,4 @@
-Below is a clear, production-ready **README.md** describing how to use *all* scripts in your tiny-kernel toolchain.
-It is written for a Debian user building a minimized kernel using **linux-source from official Debian**, with a hardened minimal config.
-
-If you need this delivered as an actual `README.md` file, tell me and I will generate it.
-
----
-
-# README — Tiny Debian Kernel Build System
+# Tiny Debian Kernel Build System
 
 Minimized, Debian-compatible, reproducible kernel builds
 
