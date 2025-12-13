@@ -105,9 +105,14 @@ check_y CONFIG_EFI_STUB \
 # --------------------------------------------------
 echo
 echo "-- Compression --"
-check_y CONFIG_KERNEL_GZIP \
-  && pass "Kernel gzip compression enabled" \
-  || fail "CONFIG_KERNEL_GZIP missing"
+
+if grep -Eq "^CONFIG_KERNEL_(GZIP|XZ|ZSTD|LZ4|LZO)=y" "$config"; then
+  comp=$(grep -E "^CONFIG_KERNEL_(GZIP|XZ|ZSTD|LZ4|LZO)=y" "$config" \
+         | sed 's/CONFIG_KERNEL_//' | sed 's/=y//')
+  pass "Kernel compression enabled ($comp)"
+else
+  fail "No kernel compression method enabled"
+fi
 
 # --------------------------------------------------
 echo
