@@ -14,77 +14,122 @@ echo "==> Kernel configuration sanity check"
 echo "Config: $config"
 echo
 
-fail() {
-  echo "❌ FAIL: $1"
-  exit 1
-}
+FAILURES=0
 
 pass() {
   echo "✅ PASS: $1"
 }
 
-check() {
-  local opt="$1"
-  grep -Eq "^$opt=y|^$opt=m" "$config"
+fail() {
+  echo "❌ FAIL: $1"
+  FAILURES=$((FAILURES + 1))
 }
 
 check_y() {
-  local opt="$1"
-  grep -Eq "^$opt=y" "$config"
+  grep -Eq "^$1=y" "$config"
 }
 
 check_m_or_y() {
-  local opt="$1"
-  grep -Eq "^$opt=(y|m)" "$config"
+  grep -Eq "^$1=(y|m)" "$config"
 }
 
+# --------------------------------------------------
 echo "-- Architecture --"
-check_y CONFIG_X86_64 || fail "CONFIG_X86_64 not enabled"
-pass "x86_64 architecture"
+check_y CONFIG_X86_64 \
+  && pass "x86_64 architecture" \
+  || fail "CONFIG_X86_64 not enabled"
 
+# --------------------------------------------------
 echo
 echo "-- Initramfs support --"
-check_y CONFIG_BLK_DEV_INITRD || fail "Initramfs support missing"
-pass "Initramfs enabled"
+check_y CONFIG_BLK_DEV_INITRD \
+  && pass "Initramfs enabled" \
+  || fail "CONFIG_BLK_DEV_INITRD missing"
 
+# --------------------------------------------------
 echo
 echo "-- Module system --"
-check_y CONFIG_MODULES || fail "Kernel modules disabled"
-check_y CONFIG_MODULE_UNLOAD || fail "Module unload disabled"
-pass "Module support OK"
+check_y CONFIG_MODULES \
+  && pass "Module system enabled" \
+  || fail "CONFIG_MODULES disabled"
 
+check_y CONFIG_MODULE_UNLOAD \
+  && pass "Module unload supported" \
+  || fail "CONFIG_MODULE_UNLOAD missing"
+
+# --------------------------------------------------
 echo
 echo "-- Storage (block layer) --"
-check_y CONFIG_BLOCK || fail "Block layer disabled"
-check_m_or_y CONFIG_SCSI || fail "SCSI support missing"
-check_m_or_y CONFIG_ATA || fail "ATA support missing"
-pass "Block + storage core OK"
+check_y CONFIG_BLOCK \
+  && pass "Block layer enabled" \
+  || fail "CONFIG_BLOCK missing"
 
+check_m_or_y CONFIG_SCSI \
+  && pass "SCSI core present" \
+  || fail "CONFIG_SCSI missing"
+
+check_m_or_y CONFIG_ATA \
+  && pass "ATA support present" \
+  || fail "CONFIG_ATA missing"
+
+# --------------------------------------------------
 echo
 echo "-- Filesystems (rootfs critical) --"
-check_y CONFIG_EXT4_FS || fail "EXT4 filesystem missing"
-check_y CONFIG_TMPFS || fail "TMPFS missing"
-check_y CONFIG_DEVTMPFS || fail "DEVTMPFS missing"
-check_y CONFIG_DEVTMPFS_MOUNT || fail "DEVTMPFS auto-mount missing"
-pass "Root filesystem support OK"
+check_y CONFIG_EXT4_FS \
+  && pass "EXT4 filesystem enabled" \
+  || fail "CONFIG_EXT4_FS missing"
 
+check_y CONFIG_TMPFS \
+  && pass "TMPFS enabled" \
+  || fail "CONFIG_TMPFS missing"
+
+check_y CONFIG_DEVTMPFS \
+  && pass "DEVTMPFS enabled" \
+  || fail "CONFIG_DEVTMPFS missing"
+
+check_y CONFIG_DEVTMPFS_MOUNT \
+  && pass "DEVTMPFS auto-mount enabled" \
+  || fail "CONFIG_DEVTMPFS_MOUNT missing"
+
+# --------------------------------------------------
 echo
 echo "-- Boot support --"
-check_y CONFIG_EFI || fail "EFI support missing"
-check_y CONFIG_EFI_STUB || fail "EFI stub missing"
-pass "EFI boot support OK"
+check_y CONFIG_EFI \
+  && pass "EFI support enabled" \
+  || fail "CONFIG_EFI missing"
 
+check_y CONFIG_EFI_STUB \
+  && pass "EFI stub enabled" \
+  || fail "CONFIG_EFI_STUB missing"
+
+# --------------------------------------------------
 echo
 echo "-- Compression --"
-check_y CONFIG_KERNEL_GZIP || fail "Kernel gzip compression missing"
-pass "Kernel compression OK"
+check_y CONFIG_KERNEL_GZIP \
+  && pass "Kernel gzip compression enabled" \
+  || fail "CONFIG_KERNEL_GZIP missing"
 
+# --------------------------------------------------
 echo
-echo "-- Networking (minimal but required) --"
-check_y CONFIG_NET || fail "Networking stack disabled"
-check_m_or_y CONFIG_INET || fail "IPv4 missing"
-pass "Basic networking OK"
+echo "-- Networking (minimal) --"
+check_y CONFIG_NET \
+  && pass "Networking stack enabled" \
+  || fail "CONFIG_NET missing"
 
+check_m_or_y CONFIG_INET \
+  && pass "IPv4 stack present" \
+  || fail "CONFIG_INET missing"
+
+# --------------------------------------------------
 echo
-echo "==> Sanity check completed successfully"
-echo "This kernel config is boot-viable."
+echo "==> Sanity check summary"
+
+if [ "$FAILURES" -eq 0 ]; then
+  echo "✅ ALL CHECKS PASSED"
+  echo "Kernel configuration is boot-viable."
+  exit 0
+else
+  echo "❌ $FAILURES check(s) FAILED"
+  echo "Fix the above issues before running the build step."
+  exit 1
+fi
