@@ -41,6 +41,18 @@ else
   echo "[WARN] merge_config.sh not found; skipping merge"
 fi
 
+echo "==> Forcing critical boot options"
+
+# HARD REQUIREMENTS — DO NOT REMOVE
+scripts/config --enable CONFIG_DEVTMPFS
+scripts/config --enable CONFIG_DEVTMPFS_MOUNT
+scripts/config --enable CONFIG_BLK_DEV_INITRD
+scripts/config --enable CONFIG_TMPFS
+scripts/config --enable CONFIG_EXT4_FS
+scripts/config --enable CONFIG_EFI
+scripts/config --enable CONFIG_EFI_STUB
+scripts/config --enable CONFIG_MODULES
+
 # ----------------------------
 # Step 3: Disable debug options
 # ----------------------------
